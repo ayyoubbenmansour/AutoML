@@ -102,35 +102,11 @@ The user can select between three workflow modes:
 
 ## ⚙️ Environment Setup
 
-### 1. Clone the Repository
+### Clone the Repository
 ```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
-
-### 2. Create a Virtual Environment
-python -m venv venv
+git clone https://github.com/ayyoubbenmansour/AutoML.git
+cd AutoML
 
 
-Activate it:
-
-### Windows
-```bash
-venv\Scripts\activate
 
 
-### macOS/Linux
-```bash
-source venv/bin/activate
-
-### 3. Install Dependencies
-
-Install dependencies from the requirements.txt file:
-```bash
-pip install -r requirements.txt
-
-### 4. Run the Application
-```bash
-python main.py
-Then open in your browser :
-
-http://127.0.0.1:5000/
