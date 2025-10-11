@@ -1,4 +1,4 @@
-# AutoML Pro (Flask)
+# Smart AutoML 
 
 Lightweight Flask app to upload tabular/time-series data, configure preprocessing, and train RNN models (classification, regression, forecasting) with manual, default and HPO flows.
 
