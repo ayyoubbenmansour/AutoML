@@ -1,0 +1,1325 @@
+{% extends "base.html" %}
+
+{% block title %}Optimisation HPO - AutoML Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page-specific styles for HPO processing */
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+.hpo-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-heavy);
+    max-width: 800px;
+    width: 100%;
+    animation: fadeInUp 0.6s ease-out;
+    margin: 0 auto;
+}
+
+.method-section {
+    margin-bottom: 2rem;
+}
+
+.section-label {
+    font-weight: var(--font-weight-semibold);
+    color: #374151;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.radio-group {
+    display: grid;
+    gap: 1rem;
+}
+
+.radio-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.radio-option input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-card {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--border-radius-small);
+    background: rgba(255, 255, 255, 0.9);
+    transition: var(--transition-fast);
+    color: #333;
+}
+
+.radio-option input:checked + .radio-card {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.radio-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
+
+.radio-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    margin-right: 1rem;
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+.radio-option input:checked + .radio-card .radio-indicator {
+    border-color: var(--primary);
+    background: var(--primary);
+}
+
+.radio-indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.2s ease;
+}
+
+.radio-option input:checked + .radio-card .radio-indicator::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.method-info h3 {
+    font-weight: var(--font-weight-semibold);
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.method-info p {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.config-section {
+    background: rgba(248, 250, 252, 0.9);
+    border: 2px solid #e2e8f0;
+    border-radius: var(--border-radius-small);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    transition: all 0.4s ease;
+    overflow: hidden;
+}
+
+.config-section.hidden {
+    max-height: 0;
+    padding: 0 1.5rem;
+    margin-top: 0;
+    border-width: 0;
+    opacity: 0;
+}
+
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.config-title {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-semibold);
+    color: #1f2937;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--success);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.param-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.param-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.param-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
+    background: white;
+    color: #333;
+}
+
+.param-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.param-input.error {
+    border-color: var(--danger);
+    background: #fef2f2;
+}
+
+.param-labels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) auto;
+    gap: 1rem;
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.param-label {
+    font-weight: var(--font-weight-medium);
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: var(--transition-fast);
+}
+
+.delete-btn:hover {
+    background: #fef2f2;
+}
+
+.stats {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #9ca3af;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.submit-btn {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1.5rem;
+    transition: var(--transition-fast);
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}
+
+.error-message {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: none;
+    padding: 0.75rem;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 4px solid var(--danger);
+}
+
+.help-text {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .hpo-container { 
+        padding: 1rem; 
+    }
+    
+    .param-row { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .param-labels { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .config-header { 
+        flex-direction: column; 
+        align-items: stretch; 
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <h1>🚀 Optimisation HPO</h1>
+    <p>Configuration intelligente des hyperparamètres</p>
+</div>
+
+<div class="hpo-container">
+    <form id="hpoForm" method="POST">
+        <input type="hidden" name="grid_configurations" id="gridConfigurationsInput">
+        
+        <div class="method-section">
+            <div class="section-label">Méthode d'optimisation</div>
+            
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="optimization_method" value="grid" required>
+                    <div class="radio-card">
+                        <div class="radio-indicator"></div>
+                        <div class="method-info">
+                            <h3>Grid Search</h3>
+                            <p>Teste TOUTES les combinaisons spécifiées</p>
+                        </div>
+                    </div>
+                </label>
+                
+                <label class="radio-option">
+                    <input type="radio" name="optimization_method" value="random">
+                    <div class="radio-card">
+                        <div class="radio-indicator"></div>
+                        <div class="method-info">
+                            <h3>Random Search</h3>
+                            <p>Sélection aléatoire parmi vos configurations</p>
+                        </div>
+                    </div>
+                </label>
+                
+                <label class="radio-option">
+                    <input type="radio" name="optimization_method" value="bayesian">
+                    <div class="radio-card">
+                        <div class="radio-indicator"></div>
+                        <div class="method-info">
+                            <h3>Bayesian Optimization</h3>
+                            <p>IA intelligente avec configuration optimale</p>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div id="configSection" class="config-section hidden">
+            <!-- Model Selection Section -->
+            <div class="model-selection-section">
+                <div class="section-label">Choix du modèle</div>
+                <div class="model-grid">
+                    <label class="model-option">
+                        <input type="radio" name="model_type" value="bi_rnn" required>
+                        <div class="model-card">
+                            <div class="model-indicator"></div>
+                            <div class="model-info">
+                                <h4>Bi-RNN</h4>
+                                <p>Simple et rapide</p>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="model-option">
+                        <input type="radio" name="model_type" value="bi_lstm" checked>
+                        <div class="model-card">
+                            <div class="model-indicator"></div>
+                            <div class="model-info">
+                                <h4>Bi-LSTM</h4>
+                                <p>Mémoire longue terme</p>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="model-option">
+                        <input type="radio" name="model_type" value="bi_gru">
+                        <div class="model-card">
+                            <div class="model-indicator"></div>
+                            <div class="model-info">
+                                <h4>Bi-GRU</h4>
+                                <p>Équilibre optimal</p>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="model-option">
+                        <input type="radio" name="model_type" value="stacked_lstm">
+                        <div class="model-card">
+                            <div class="model-indicator"></div>
+                            <div class="model-info">
+                                <h4>Stacked LSTM</h4>
+                                <p>Plusieurs couches</p>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="model-option">
+                        <input type="radio" name="model_type" value="stacked_gru">
+                        <div class="model-card">
+                            <div class="model-indicator"></div>
+                            <div class="model-info">
+                                <h4>Stacked GRU</h4>
+                                <p>Architecture profonde</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Grid/Random Search Parameters -->
+            <div id="gridRandomParams" class="param-config-section hidden">
+                <div class="config-header">
+                    <h3 class="config-title">⚙️ Configurations des hyperparamètres</h3>
+                    <div class="btn-group">
+                        <button type="button" id="addBtn" class="btn btn-primary">
+                            ➕ Ajouter
+                        </button>
+                        <button type="button" id="presetBtn" class="btn btn-secondary">
+                            📋 Presets
+                        </button>
+                        <button type="button" id="clearBtn" class="btn btn-danger">
+                            🗑️ Effacer
+                        </button>
+                    </div>
+                </div>
+
+                <div id="paramContainer">
+                    <div class="param-labels">
+                        <div class="param-label">Couches</div>
+                        <div class="param-label">Unités</div>
+                        <div class="param-label">Dropout</div>
+                        <div class="param-label">Learning Rate</div>
+                        <div class="param-label">Batch Size</div>
+                        <div class="param-label">Epochs</div>
+                        <div></div>
+                    </div>
+                    <div id="paramGrid" class="param-grid">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Random Search specific options -->
+                <div id="randomSearchOptions" class="random-options hidden">
+                    <div class="option-group">
+                        <label>Nombre d'essais aléatoires</label>
+                        <input type="number" name="n_random_trials" value="10" min="1" max="50" class="form-control">
+                        <small>Nombre de configurations à tester aléatoirement parmi celles définies</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bayesian Optimization Parameters -->
+            <div id="bayesianParams" class="bayesian-config-section hidden">
+                <div class="bayesian-header">
+                    <h3 class="config-title">🧠 Configuration Bayésienne Optimale</h3>
+                    <div class="recommendation-badge">⭐ Configuration Recommandée</div>
+                </div>
+
+                <div class="bayesian-config-grid">
+                    <!-- Search Space Configuration -->
+                    <div class="config-card">
+                        <h4>🎯 Espace de recherche</h4>
+                        <div class="param-group">
+                            <label>Plage d'unités</label>
+                            <div class="range-input-group">
+                                <input type="number" name="units_min" value="32" min="16" max="512" class="form-control">
+                                <span>→</span>
+                                <input type="number" name="units_max" value="256" min="16" max="512" class="form-control">
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <label>Plage de dropout</label>
+                            <div class="range-input-group">
+                                <input type="number" name="dropout_min" value="0.1" min="0" max="0.5" step="0.1" class="form-control">
+                                <span>→</span>
+                                <input type="number" name="dropout_max" value="0.4" min="0" max="0.5" step="0.1" class="form-control">
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <label>Learning rate (échelle log)</label>
+                            <div class="range-input-group">
+                                <input type="number" name="lr_min" value="0.0001" min="0.00001" max="0.1" step="0.00001" class="form-control">
+                                <span>→</span>
+                                <input type="number" name="lr_max" value="0.01" min="0.00001" max="0.1" step="0.00001" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optimization Settings -->
+                    <div class="config-card">
+                        <h4>⚡ Paramètres d'optimisation</h4>
+                        <div class="param-group">
+                            <label>Nombre d'essais</label>
+                            <input type="number" name="n_trials" value="50" min="10" max="200" class="form-control">
+                            <small>Recommandé: 50-100 pour un bon équilibre</small>
+                        </div>
+                        <div class="param-group">
+                            <label>Timeout (minutes)</label>
+                            <input type="number" name="timeout_minutes" value="60" min="10" max="360" class="form-control">
+                            <small>Temps maximum alloué</small>
+                        </div>
+                        <div class="param-group">
+                            <label>Sampler</label>
+                            <select name="sampler" class="form-control">
+                                <option value="TPESampler" selected>TPE (Recommandé)</option>
+                                <option value="CmaEsSampler">CMA-ES</option>
+                                <option value="RandomSampler">Random</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-footer">
+                <div class="stats" id="configStats">Configuration en cours...</div>
+                <div class="help-text">
+                    💡 <span id="helpMessage">Ajustez vos hyperparamètres pour optimiser les performances</span>
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+            🎯 Lancer l'Optimisation
+        </button>
+    </form>
+</div>
+
+<style>
+/* Model selection styles */
+.model-selection-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.model-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.model-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.model-card {
+    padding: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.model-option input:checked + .model-card {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.2);
+    transform: scale(1.05);
+}
+
+/* Grid/Random parameters */
+.param-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr) auto;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.random-options {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* Bayesian configuration styles */
+.bayesian-config-section {
+    margin-top: 20px;
+}
+
+.bayesian-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.recommendation-badge {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.bayesian-config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.config-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.config-card h4 {
+    margin: 0 0 15px 0;
+    color: #4facfe;
+    font-size: 1.1rem;
+}
+
+.param-group {
+    margin-bottom: 15px;
+}
+
+.param-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.param-group small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.range-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.range-input-group span {
+    color: #4facfe;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Bayesian presets */
+.bayesian-presets {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(79, 172, 254, 0.1);
+    border-radius: 12px;
+}
+
+.bayesian-presets h4 {
+    margin: 0 0 15px 0;
+    color: #4facfe;
+}
+
+.preset-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.preset-btn {
+    padding: 12px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.preset-btn:hover {
+    background: rgba(79, 172, 254, 0.2);
+    border-color: #4facfe;
+    transform: translateY(-2px);
+}
+.bayesian-config-section input,
+.bayesian-config-section .config-card input {
+    color: rgb(0, 5, 8) !important; 
+    font-weight: bold;
+}
+.bayesian-config-section .config-card input:focus {
+    outline: 2px solid #4facfe;
+    background: #eaf6ff;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class HPOOptimizer {
+    constructor() {
+        this.configurations = [];
+        this.currentMethod = null;
+        this.selectedModel = 'bi_lstm';
+        this.initializeElements();
+        this.bindEvents();
+        
+        // Enhanced presets for different scenarios
+        this.gridRandomPresets = [
+            { layers: 1, units: 32, dropout: 0.2, lr: 0.001, batch: 32, epochs: 50 },
+            { layers: 2, units: 64, dropout: 0.3, lr: 0.001, batch: 32, epochs: 40 },
+            { layers: 2, units: 32, dropout: 0.2, lr: 0.005, batch: 64, epochs: 100 },
+            { layers: 3, units: 64, dropout: 0.3, lr: 0.01, batch: 32, epochs: 30 },
+            { layers: 2, units: 128, dropout: 0.4, lr: 0.001, batch: 64, epochs: 50 },
+            { layers: 3, units: 256, dropout: 0.3, lr: 0.05, batch: 64, epochs: 60}
+        ];
+    }
+
+    initializeElements() {
+        this.form = document.getElementById('hpoForm');
+        this.configSection = document.getElementById('configSection');
+        this.paramGrid = document.getElementById('paramGrid');
+        this.configStats = document.getElementById('configStats');
+        this.errorMessage = document.getElementById('errorMessage');
+        this.submitBtn = document.getElementById('submitBtn');
+        this.gridRandomParams = document.getElementById('gridRandomParams');
+        this.bayesianParams = document.getElementById('bayesianParams');
+        this.randomSearchOptions = document.getElementById('randomSearchOptions');
+        this.helpMessage = document.getElementById('helpMessage');
+    }
+
+    bindEvents() {
+        // Optimization method selection
+        document.querySelectorAll('input[name="optimization_method"]').forEach(radio => {
+            radio.addEventListener('change', () => this.handleMethodChange());
+        });
+
+        // Model type selection
+        document.querySelectorAll('input[name="model_type"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.selectedModel = e.target.value;
+            });
+        });
+
+        // Grid/Random buttons
+        const addBtn = document.getElementById('addBtn');
+        const presetBtn = document.getElementById('presetBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        if (addBtn) addBtn.addEventListener('click', () => this.addConfiguration());
+        if (presetBtn) presetBtn.addEventListener('click', () => this.loadGridRandomPresets());
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clearAll());
+        
+        // Bayesian preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const preset = e.target.dataset.preset;
+                this.loadBayesianPreset(preset);
+            });
+        });
+        
+        // Random trials input
+        const randomTrialsInput = document.querySelector('input[name="n_random_trials"]');
+        if (randomTrialsInput) {
+            randomTrialsInput.addEventListener('change', () => this.updateStats());
+        }
+        
+        // Form submission
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    }
+
+    handleMethodChange() {
+        const selected = document.querySelector('input[name="optimization_method"]:checked');
+        this.currentMethod = selected?.value;
+        
+        if (this.currentMethod) {
+            this.showConfigSection();
+            
+            // Reset sections
+            this.gridRandomParams.classList.add('hidden');
+            this.bayesianParams.classList.add('hidden');
+            this.randomSearchOptions.classList.add('hidden');
+            
+            if (this.currentMethod === 'grid') {
+                this.gridRandomParams.classList.remove('hidden');
+                this.helpMessage.textContent = 'Grid Search testera TOUTES les combinaisons définies';
+                if (this.configurations.length === 0) {
+                    this.loadGridRandomPresets(); // Auto-load presets
+                }
+            } else if (this.currentMethod === 'random') {
+                this.gridRandomParams.classList.remove('hidden');
+                this.randomSearchOptions.classList.remove('hidden');
+                this.helpMessage.textContent = 'Random Search sélectionnera aléatoirement parmi vos configurations';
+                if (this.configurations.length === 0) {
+                    this.loadGridRandomPresets(); // Auto-load presets
+                }
+            } else if (this.currentMethod === 'bayesian') {
+                this.bayesianParams.classList.remove('hidden');
+                this.helpMessage.textContent = 'Optimisation Bayésienne utilise l\'IA pour trouver les meilleurs paramètres';
+                this.loadBayesianPreset('balanced'); // Load default balanced preset
+            }
+            
+            this.updateStats();
+        } else {
+            this.hideConfigSection();
+        }
+    }
+
+    showConfigSection() {
+        this.configSection.classList.remove('hidden');
+    }
+
+    hideConfigSection() {
+        this.configSection.classList.add('hidden');
+    }
+
+    addConfiguration(config = null) {
+        const defaultConfig = config || {
+            layers: 2, units: 128, dropout: 0.2, lr: 0.001, batch: 32, epochs: 100
+        };
+
+        const id = Date.now() + Math.random();
+        this.configurations.push({ id, ...defaultConfig });
+
+        const row = this.createConfigRow(id, defaultConfig);
+        this.paramGrid.appendChild(row);
+        this.updateStats();
+        this.hideError();
+    }
+
+    createConfigRow(id, config) {
+        const row = document.createElement('div');
+        row.className = 'param-row';
+        row.dataset.id = id;
+        
+        row.innerHTML = `
+            <input type="number" class="param-input" data-param="layers" 
+                   value="${config.layers}" min="1" max="10" step="1"
+                   title="Nombre de couches">
+            <input type="number" class="param-input" data-param="units" 
+                   value="${config.units}" min="16" max="2048" step="16"
+                   title="Unités par couche">
+            <input type="number" class="param-input" data-param="dropout" 
+                   value="${config.dropout}" min="0" max="0.9" step="0.1"
+                   title="Taux de dropout">
+            <input type="number" class="param-input" data-param="lr" 
+                   value="${config.lr}" min="0.00001" max="0.1" step="0.00001"
+                   title="Learning rate">
+            <input type="number" class="param-input" data-param="batch" 
+                   value="${config.batch}" min="8" max="512" step="8"
+                   title="Batch size">
+            <input type="number" class="param-input" data-param="epochs" 
+                   value="${config.epochs}" min="10" max="500" step="10"
+                   title="Nombre d'epochs">
+            <button type="button" class="delete-btn" onclick="hpoOptimizer.deleteConfiguration('${id}')"
+                    title="Supprimer cette configuration">
+                🗑️
+            </button>
+        `;
+
+        // Bind input events
+        row.querySelectorAll('.param-input').forEach(input => {
+            input.addEventListener('input', () => this.updateConfiguration(id));
+            input.addEventListener('blur', (e) => this.validateInput(e.target));
+        });
+
+        return row;
+    }
+
+    updateConfiguration(id) {
+        const row = document.querySelector(`[data-id="${id}"]`);
+        const config = this.configurations.find(c => c.id === id);
+        
+        if (config && row) {
+            row.querySelectorAll('.param-input').forEach(input => {
+                const value = parseFloat(input.value);
+                if (!isNaN(value)) {
+                    config[input.dataset.param] = value;
+                }
+            });
+        }
+        this.updateStats();
+    }
+
+    deleteConfiguration(id) {
+        this.configurations = this.configurations.filter(c => c.id !== id);
+        const row = document.querySelector(`[data-id="${id}"]`);
+        if (row) row.remove();
+        
+        this.updateStats();
+        if (this.configurations.length === 0) {
+            this.showEmptyState();
+        }
+    }
+
+    loadGridRandomPresets() {
+        this.clearAll();
+        this.gridRandomPresets.forEach(preset => this.addConfiguration(preset));
+        this.showNotification('Configurations prédéfinies chargées', 'success');
+    }
+
+    loadBayesianPreset(presetName) {
+        const preset = this.bayesianPresets[presetName];
+        if (!preset) return;
+        
+        // Fill in the form fields
+        Object.keys(preset).forEach(key => {
+            const input = document.querySelector(`input[name="${key}"]`);
+            if (input) {
+                input.value = preset[key];
+            }
+        });
+        
+        // Highlight the selected preset button
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.style.background = btn.dataset.preset === presetName 
+                ? 'rgba(79, 172, 254, 0.3)' 
+                : 'rgba(255, 255, 255, 0.05)';
+        });
+        
+        this.updateStats();
+        this.showNotification(`Configuration "${presetName}" chargée`, 'success');
+    }
+
+    clearAll() {
+        this.configurations = [];
+        this.paramGrid.innerHTML = '';
+        this.updateStats();
+        this.showEmptyState();
+    }
+
+    showEmptyState() {
+        if (this.paramGrid.children.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = `
+                <div class="empty-icon">📊</div>
+                <div>Aucune configuration</div>
+                <small>Cliquez sur "Ajouter" ou "Presets" pour commencer</small>
+            `;
+            this.paramGrid.appendChild(emptyDiv);
+        }
+    }
+
+    updateStats() {
+        if (this.currentMethod === 'grid') {
+            const count = this.configurations.length;
+            const totalCombinations = count;
+            const estimatedTime = totalCombinations * 5; // Assume 5 min per config
+            this.configStats.innerHTML = `
+                <strong>${count} configurations</strong> | 
+                Temps estimé: ${this.formatTime(estimatedTime)}
+            `;
+        } else if (this.currentMethod === 'random') {
+            const totalConfigs = this.configurations.length;
+            const randomTrials = document.querySelector('input[name="n_random_trials"]')?.value || 10;
+            const actualTrials = Math.min(randomTrials, totalConfigs);
+            const estimatedTime = actualTrials * 5; // Assume 5 min per config
+            this.configStats.innerHTML = `
+                <strong>${totalConfigs} configurations disponibles</strong> | 
+                <strong>${actualTrials} seront testées aléatoirement</strong> | 
+                Temps estimé: ${this.formatTime(estimatedTime)}
+            `;
+        } else if (this.currentMethod === 'bayesian') {
+            const trials = document.querySelector('input[name="n_trials"]')?.value || 50;
+            const timeout = document.querySelector('input[name="timeout_minutes"]')?.value || 60;
+            this.configStats.innerHTML = `
+                <strong>${trials} essais</strong> | 
+                Temps max: ${timeout} minutes | 
+                <span style="color: #ffd700;">⭐ Configuration optimale</span>
+            `;
+        }
+    }
+
+    formatTime(minutes) {
+        if (minutes < 60) {
+            return `${minutes} min`;
+        } else {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}min`;
+        }
+    }
+
+    validateInput(input) {
+        const value = parseFloat(input.value);
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        
+        const isValid = !isNaN(value) && value >= min && value <= max;
+        input.classList.toggle('error', !isValid);
+        
+        if (!isValid) {
+            this.showError(`${input.dataset.param || input.name}: valeur entre ${min} et ${max}`);
+        }
+        
+        return isValid;
+    }
+
+    validateAll() {
+        // Check if model is selected
+        const modelSelected = document.querySelector('input[name="model_type"]:checked');
+        if (!modelSelected) {
+            this.showError('Veuillez sélectionner un modèle');
+            return false;
+        }
+
+        // Validation for Grid Search
+        if (this.currentMethod === 'grid') {
+            if (this.configurations.length === 0) {
+                this.showError('Ajoutez au moins une configuration pour Grid Search');
+                return false;
+            }
+
+            const inputs = this.paramGrid.querySelectorAll('.param-input');
+            let isValid = true;
+            inputs.forEach(input => {
+                if (!this.validateInput(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                this.showError('Corrigez les valeurs invalides');
+                return false;
+            }
+        }
+        
+        // Validation for Random Search
+        if (this.currentMethod === 'random') {
+            if (this.configurations.length === 0) {
+                this.showError('Ajoutez au moins une configuration pour Random Search');
+                return false;
+            }
+
+            const randomTrials = document.querySelector('input[name="n_random_trials"]');
+            if (!randomTrials || randomTrials.value < 1) {
+                this.showError('Spécifiez le nombre d\'essais aléatoires');
+                return false;
+            }
+
+            if (parseInt(randomTrials.value) > this.configurations.length) {
+                this.showError(`Le nombre d'essais (${randomTrials.value}) ne peut pas dépasser le nombre de configurations (${this.configurations.length})`);
+                return false;
+            }
+
+            const inputs = this.paramGrid.querySelectorAll('.param-input');
+            let isValid = true;
+            inputs.forEach(input => {
+                if (!this.validateInput(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                this.showError('Corrigez les valeurs invalides');
+                return false;
+            }
+        }
+        
+        // Validation for Bayesian
+        if (this.currentMethod === 'bayesian') {
+            const requiredFields = [
+                'n_trials', 'timeout_minutes', 
+                'units_min', 'units_max',
+                'dropout_min', 'dropout_max',
+                'lr_min', 'lr_max'
+            ];
+            
+            for (let field of requiredFields) {
+                const input = document.querySelector(`input[name="${field}"]`);
+                if (!input || !input.value) {
+                    this.showError(`Le champ ${field.replace('_', ' ')} est requis`);
+                    return false;
+                }
+            }
+
+            // Validate ranges
+            const unitsMin = parseFloat(document.querySelector('input[name="units_min"]').value);
+            const unitsMax = parseFloat(document.querySelector('input[name="units_max"]').value);
+            if (unitsMin >= unitsMax) {
+                this.showError('La valeur min des unités doit être inférieure à la valeur max');
+                return false;
+            }
+
+            const dropoutMin = parseFloat(document.querySelector('input[name="dropout_min"]').value);
+            const dropoutMax = parseFloat(document.querySelector('input[name="dropout_max"]').value);
+            if (dropoutMin >= dropoutMax) {
+                this.showError('La valeur min du dropout doit être inférieure à la valeur max');
+                return false;
+            }
+
+            const lrMin = parseFloat(document.querySelector('input[name="lr_min"]').value);
+            const lrMax = parseFloat(document.querySelector('input[name="lr_max"]').value);
+            if (lrMin >= lrMax) {
+                this.showError('La valeur min du learning rate doit être inférieure à la valeur max');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    showError(message) {
+        this.errorMessage.textContent = message;
+        this.errorMessage.style.display = 'block';
+        this.errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            this.hideError();
+        }, 5000);
+    }
+
+    hideError() {
+        this.errorMessage.style.display = 'none';
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 'rgba(33, 150, 243, 0.9)'};
+            color: white;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    prepareFormData() {
+        const formData = new FormData(this.form);
+        
+        // Add configurations for Grid/Random Search
+        if (this.currentMethod === 'grid' || this.currentMethod === 'random') {
+            formData.append('configurations', JSON.stringify(this.configurations));
+        }
+        
+        // Convert timeout to seconds for backend
+        if (this.currentMethod === 'bayesian') {
+            const timeoutMinutes = formData.get('timeout_minutes');
+            if (timeoutMinutes) {
+                formData.append('timeout', timeoutMinutes * 60);
+            }
+        }
+        
+        return formData;
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.validateAll()) return;
+
+        // Prepare configurations for submission
+        if (this.currentMethod === 'grid' || this.currentMethod === 'random') {
+            const gridConfigInput = document.getElementById('gridConfigurationsInput');
+            // Map frontend keys to backend keys
+            const mappedConfigs = this.configurations.map(cfg => ({
+                model_type: this.selectedModel,
+                units: cfg.units,
+                dropout: cfg.dropout,
+                learning_rate: cfg.lr,
+                batch_size: cfg.batch,
+                epochs: cfg.epochs
+            }));
+            gridConfigInput.value = JSON.stringify(mappedConfigs);
+        }
+
+        // Show loading state with method-specific message
+        let loadingMessage = 'Optimisation en cours...';
+        if (this.currentMethod === 'grid') {
+            loadingMessage = `Test de ${this.configurations.length} configurations...`;
+        } else if (this.currentMethod === 'random') {
+            const trials = document.querySelector('input[name="n_random_trials"]').value;
+            loadingMessage = `Test aléatoire de ${trials} configurations...`;
+        } else if (this.currentMethod === 'bayesian') {
+            const trials = document.querySelector('input[name="n_trials"]').value;
+            loadingMessage = `Optimisation Bayésienne: ${trials} essais...`;
+        }
+        
+        // Update button to show loading
+        this.submitBtn.disabled = true;
+        this.submitBtn.innerHTML = `
+            <span class="spinner"></span> ${loadingMessage}
+        `;
+        
+        // Add estimated time display
+        this.showNotification(`Optimisation démarrée. ${loadingMessage}`, 'success');
+        
+        // Submit the form
+        this.form.submit();
+    }
+}
+
+// Initialize on DOM load
+let hpoOptimizer;
+document.addEventListener('DOMContentLoaded', () => {
+    hpoOptimizer = new HPOOptimizer();
+    
+    // Add CSS for animations
+    if (!document.querySelector('#hpo-animations')) {
+        const style = document.createElement('style');
+        style.id = 'hpo-animations';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            
+            .spinner {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            .param-input.error {
+                border-color: #ff4444 !important;
+                background: rgba(255, 68, 68, 0.1) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}AutoML Pro - Plateforme de Machine Learning Intelligente{% endblock %}
+
+{% block description %}Plateforme avancée de machine learning pour le prétraitement automatisé des données, la visualisation interactive et l'entraînement optimisé de modèles RNN avec intelligence artificielle{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page-specific styles for home page */
+.hero {
+    position: relative;
+    text-align: center;
+    padding: 100px 0;
+    background: var(--glass-bg);
+    border-radius: var(--border-radius-large);
+    backdrop-filter: blur(15px);
+    margin-bottom: 60px;
+    box-shadow: var(--shadow-heavy);
+    border: 1px solid var(--glass-border);
+    z-index: 2;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 3;
+}
+
+.start-btn {
+    display: inline-block;
+    background: var(--danger-gradient);
+    color: white;
+    padding: 18px 50px;
+    font-size: 1.3rem;
+    text-decoration: none;
+    border-radius: 60px;
+    transition: var(--transition-smooth);
+    box-shadow: 0 8px 25px rgba(238, 90, 82, 0.4);
+    text-transform: uppercase;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.start-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.start-btn:hover::before {
+    left: 100%;
+}
+
+.start-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(238, 90, 82, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin-bottom: 80px;
+    z-index: 2;
+    position: relative;
+}
+
+.feature-card {
+    background: var(--glass-bg-dark);
+    padding: 45px 35px;
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: var(--shadow-heavy);
+}
+
+.feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 25px;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(79, 172, 254, 0.3));
+}
+
+.feature-card h3 {
+    font-size: 1.6rem;
+    margin-bottom: 18px;
+    color: #fff;
+    font-weight: var(--font-weight-semibold);
+}
+
+.feature-card p {
+    opacity: 0.9;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.workflow {
+    background: var(--glass-bg);
+    border-radius: var(--border-radius-large);
+    padding: 70px 50px;
+    backdrop-filter: blur(15px);
+    margin-bottom: 60px;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 2;
+}
+
+.workflow h2 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 50px;
+    background: linear-gradient(45deg, #fff, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: var(--font-weight-bold);
+}
+
+.workflow-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.step {
+    text-align: center;
+    flex: 1;
+    min-width: 180px;
+    position: relative;
+}
+
+.step-number {
+    width: 70px;
+    height: 70px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-extrabold);
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+    transition: var(--transition-fast);
+    position: relative;
+    z-index: 3;
+}
+
+.step:hover .step-number {
+    transform: scale(1.1) rotate(360deg);
+    box-shadow: 0 15px 35px rgba(79, 172, 254, 0.6);
+}
+
+.step h4 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+    font-weight: var(--font-weight-semibold);
+}
+
+.step p {
+    opacity: 0.85;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.arrow {
+    font-size: 2.5rem;
+    opacity: 0.4;
+    color: #4facfe;
+    align-self: center;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.footer {
+    text-align: center;
+    padding: 40px 0;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    margin-top: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer p {
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .hero {
+        padding: 60px 20px;
+    }
+    
+    .workflow {
+        padding: 40px 25px;
+    }
+    
+    .workflow h2 {
+        font-size: 2.2rem;
+    }
+    
+    .workflow-steps {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .arrow {
+        transform: rotate(90deg);
+        margin: 20px 0;
+    }
+    
+    .features {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .feature-card {
+        padding: 35px 25px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero fade-in">
+    <div class="hero-content">
+        <h1>🧠 AutoML Pro</h1>
+        <p>Plateforme avancée de machine learning pour le prétraitement automatisé des données, la visualisation interactive et l'entraînement optimisé de modèles RNN avec intelligence artificielle</p>
+        <a href="{{ url_for('main.upload') }}" class="start-btn">
+            <span>🚀 Commencer Maintenant</span>
+        </a>
+    </div>
+</div>
+
+<div class="features fade-in">
+    <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">📊</div>
+        <h3>Analyse Intelligente</h3>
+        <p>Analyse automatique de vos datasets avec détection des types de données, valeurs manquantes, et recommandations personnalisées pour un prétraitement optimal.</p>
+    </div>
+    
+    <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">🎨</div>
+        <h3>Visualisation Avancée</h3>
+        <p>Graphiques interactifs et tableaux de bord dynamiques pour explorer vos données en profondeur avec des matrices de corrélation et distributions automatiques.</p>
+    </div>
+    
+    <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">⚡</div>
+        <h3>Entraînement Optimisé</h3>
+        <p>Modèles RNN, LSTM et GRU avec optimisation automatique des hyperparamètres par Grid Search, Random Search et optimisation bayésienne.</p>
+    </div>
+</div>
+
+<div class="workflow fade-in">
+    <h2>🔄 Processus Intelligent</h2>
+    <div class="workflow-steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h4>📁 Import Intelligent</h4>
+            <p>Importez vos données CSV, JSON ou Excel avec validation automatique et détection des formats</p>
+        </div>
+        
+        <div class="arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <h4>📈 Visualisation</h4>
+            <p>Explorez vos données avec des graphiques dynamiques, statistiques avancées et suggestions de colonnes cibles</p>
+        </div>
+        
+        <div class="arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <h4>🔧 Prétraitement</h4>
+            <p>Nettoyage intelligent avec gestion des valeurs manquantes, encodage optimal et normalisation adaptative</p>
+        </div>
+        
+        <div class="arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">4</div>
+            <h4>🤖 IA Training</h4>
+            <p>Entraînement automatisé avec sélection du meilleur modèle RNN et optimisation des hyperparamètres</p>
+        </div>
+        
+        <div class="arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">5</div>
+            <h4>📋 Résultats Pro</h4>
+            <p>Rapports détaillés avec métriques de performance, visualisations des prédictions et modèle exportable</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer fade-in">
+    <p>© 2025 AutoML Pro - Plateforme de Machine Learning Intelligente</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Page-specific JavaScript for home page
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced smooth scroll for start button
+    document.querySelector('.start-btn').addEventListener('click', function(e) {
+        // Add a subtle click effect
+        this.style.transform = 'translateY(-3px) scale(0.98)';
+        setTimeout(() => {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+        }, 100);
+    });
+
+    // Enhanced feature card interactions
+    document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-15px) scale(1.03)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-10px) scale(1.02)';
+        });
+    });
+
+    // Step number hover effects
+    document.querySelectorAll('.step-number').forEach(stepNumber => {
+        stepNumber.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.15) rotate(45deg)';
+        });
+        
+        stepNumber.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+
+    // Add parallax effect to hero section
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+        }
+    });
+});
+</script>
+{% endblock %}

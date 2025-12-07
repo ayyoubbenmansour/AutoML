@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Traitement par Défaut - AutoML Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Page-specific styles for default processing */
+    .description {
+        text-align: center;
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 40px;
+    }
+
+    .model-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .model-card {
+        background: var(--glass-bg);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        cursor: pointer;
+        transition: var(--transition-fast);
+        position: relative;
+    }
+
+    .model-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .model-card input[type="radio"] {
+        display: none;
+    }
+
+    .model-card label {
+        display: block;
+        cursor: pointer;
+    }
+
+    .model-card h3 {
+        color: #4facfe;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .model-card p {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+
+    .model-card.selected {
+        border: 2px solid #00f2fe;
+        background: rgba(79, 172, 254, 0.2);
+        box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+    }
+
+    .submit-section {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .buttons-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .submit-btn {
+        background: var(--accent-gradient);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 30px;
+        font-size: 1rem;
+        cursor: pointer;
+        text-transform: uppercase;
+        font-weight: var(--font-weight-bold);
+        transition: var(--transition-fast);
+        margin: 0 10px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }
+
+    .back-btn {
+        background: var(--danger-gradient);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 30px;
+        font-size: 1rem;
+        cursor: pointer;
+        text-transform: uppercase;
+        font-weight: var(--font-weight-bold);
+        transition: var(--transition-fast);
+        margin: 0 10px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 117, 140, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .model-selection {
+            grid-template-columns: 1fr;
+        }
+
+        .buttons-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .submit-btn,
+        .back-btn {
+            width: 100%;
+            margin: 10px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <h1>⚡ Traitement par Défaut</h1>
+    <p class="description">Pipeline automatique avec RNN pour séries temporelles et ML traditionnel pour données
+        tabulaires.</p>
+</div>
+
+<div class="glass-card">
+    <form method="POST">
+        <div class="model-selection">
+            <div class="model-card">
+                <input type="radio" name="model_type" id="bi_rnn" value="bi_rnn" required>
+                <label for="bi_rnn">
+                    <h3>Bi-RNN</h3>
+                    <p>Réseau de neurones récurrent bidirectionnel simple. Lit les séquences dans les deux sens pour
+                        capturer un contexte global. Léger mais moins performant sur des séquences complexes.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="bi_lstm" value="bi_lstm">
+                <label for="bi_lstm">
+                    <h3>Bi-LSTM</h3>
+                    <p>Version bidirectionnelle du LSTM, qui gère mieux les dépendances longues. Excellent pour les
+                        tâches de séquences complexes. Plus lourd mais très performant.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="bi_gru" value="bi_gru">
+                <label for="bi_gru">
+                    <h3>Bi-GRU</h3>
+                    <p>Comme Bi-LSTM mais plus léger et plus rapide. Très bon compromis entre rapidité d'exécution et
+                        qualité d'apprentissage contextuel.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="stacked_lstm" value="stacked_lstm">
+                <label for="stacked_lstm">
+                    <h3>Stacked LSTM</h3>
+                    <p>Plusieurs couches LSTM empilées pour une meilleure capacité d'apprentissage.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="stacked_gru" value="stacked_gru">
+                <label for="stacked_gru">
+                    <h3>Stacked GRU</h3>
+                    <p>Plusieurs couches GRU empilées, rapide et performant sur de longues séquences.</p>
+                </label>
+            </div>
+        </div>
+
+        <!-- Traditional ML Classification Section -->
+        <h2 style="color: #00f2fe; margin: 40px 0 20px 0;">📊 ML Traditionnel - Classification</h2>
+        <div class="model-selection">
+            <div class="model-card">
+                <input type="radio" name="model_type" id="random_forest_clf" value="random_forest_clf">
+                <label for="random_forest_clf">
+                    <h3>Random Forest</h3>
+                    <p>Ensemble d'arbres de décision. Excellent sur données tabulaires, rapide, robuste au
+                        surapprentissage.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="xgboost_clf" value="xgboost_clf">
+                <label for="xgboost_clf">
+                    <h3>XGBoost</h3>
+                    <p>Gradient boosting optimisé. Un des meilleurs algorithmes pour données tabulaires. Haute
+                        précision.</p>
+                </label>
+            </div>
+        </div>
+
+        <!-- Traditional ML Regression Section -->
+        <h2 style="color: #a8edea; margin: 40px 0 20px 0;">📈 ML Traditionnel - Régression</h2>
+        <div class="model-selection">
+            <div class="model-card">
+                <input type="radio" name="model_type" id="random_forest_reg" value="random_forest_reg">
+                <label for="random_forest_reg">
+                    <h3>Random Forest (Reg)</h3>
+                    <p>Random Forest pour prédictions continues. Excellente généralisation, rapide et fiable.</p>
+                </label>
+            </div>
+            <div class="model-card">
+                <input type="radio" name="model_type" id="xgboost_reg" value="xgboost_reg">
+                <label for="xgboost_reg">
+                    <h3>XGBoost (Reg)</h3>
+                    <p>XGBoost pour régression. Performance exceptionnelle sur données tabulaires.</p>
+                </label>
+            </div>
+        </div>
+
+        <div class="submit-section">
+            <div class="buttons-container">
+                <button type="submit" class="submit-btn">🚀 Lancer le traitement</button>
+                <a href="{{ url_for('main.processing_mode') }}" class="back-btn">← Retour au choix du mode</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Highlight selected card
+    const cards = document.querySelectorAll('.model-card');
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            cards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            card.querySelector('input[type="radio"]').checked = true;
+        });
+    });
+
+    // Form submission
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const selectedModel = document.querySelector('input[name="model_type"]:checked');
+        if (!selectedModel) {
+            e.preventDefault();
+            AutoMLUtils.showNotification('Veuillez sélectionner un modèle.', 'error');
+            return;
+        }
+
+        AutoMLUtils.showLoadingState(document.querySelector('.submit-btn'), 'Traitement en cours...');
+    });
+</script>
+{% endblock %}

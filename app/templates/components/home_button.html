@@ -1,0 +1,8 @@
+<div class="home-button-container">
+    <a href="{{ url_for('main.home') }}" class="home-button" role="button" aria-label="Retourner à la page d'accueil">
+        <svg class="home-icon" viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        {{ button_text or "Retour à l'accueil" }}
+    </a>
+</div>

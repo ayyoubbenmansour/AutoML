@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AutoML Pro - Plateforme de Machine Learning{% endblock %}</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="{% block description %}Plateforme avancée de machine learning pour le prétraitement automatisé des données et l'entraînement optimisé de modèles RNN{% endblock %}">
+    <meta name="keywords" content="machine learning, automl, data science, neural networks, RNN, LSTM, GRU">
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Floating particles animation -->
+    <div class="particles">
+        {% for i in range(6) %}
+        <div class="particle"></div>
+        {% endfor %}
+    </div>
+
+    <!-- Home button (always visible) -->
+    {% include 'components/home_button.html' %}
+    
+    <!-- Flash messages -->
+    {% include 'components/flash_messages.html' %}
+
+    <div class="container">
+        <!-- Breadcrumb navigation (if provided) -->
+        {% if breadcrumbs %}
+            {% include 'components/breadcrumb.html' %}
+        {% endif %}
+
+        <!-- Page header (if provided) -->
+        {% if page_header %}
+        <div class="header fade-in">
+            <h1>{{ page_header.title }}</h1>
+            {% if page_header.subtitle %}
+            <p>{{ page_header.subtitle }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Main content -->
+        {% block content %}{% endblock %}
+
+        <!-- Navigation footer (if provided) -->
+        {% if navigation %}
+            {% include 'components/navigation.html' %}
+        {% endif %}
+    </div>
+
+    <!-- Shared JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

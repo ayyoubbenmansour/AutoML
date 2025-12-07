@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration Manuelle - AutoML Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page-specific styles for manual processing */
+.description {
+    text-align: center;
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 40px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: var(--font-weight-semibold);
+    color: #4facfe;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-description {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.model-type-section {
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
+}
+
+.model-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.model-card {
+    background: var(--glass-bg-dark);
+    border-radius: var(--border-radius-small);
+    padding: 15px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: 2px solid transparent;
+    text-align: center;
+    position: relative;
+}
+
+.model-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.model-card.selected {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.2);
+}
+
+.model-card input[type="radio"] {
+    display: none;
+}
+
+.model-card h4 {
+    margin: 0 0 5px 0;
+    color: #4facfe;
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.model-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.parameter-section {
+    background: rgba(79, 172, 254, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    border-left: 4px solid #4facfe;
+}
+
+.parameter-section h3 {
+    margin: 0 0 15px 0;
+    color: #4facfe;
+    font-size: 1.2rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 5px;
+    transition: var(--transition-fast);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.help-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: normal;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-fast);
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    margin-bottom: 8px;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(0, 0, 0, 0.9);
+}
+
+.help-icon:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+.submit-section {
+    text-align: center;
+    margin-top: 35px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.submit-btn {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: var(--font-weight-bold);
+    transition: var(--transition-fast);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+}
+
+.submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.95rem;
+    font-weight: var(--font-weight-medium);
+    transition: var(--transition-fast);
+    backdrop-filter: blur(5px);
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-btn svg {
+    transition: var(--transition-fast);
+}
+
+.back-btn:hover svg {
+    transform: translateX(-3px);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .submit-section {
+        flex-direction: column;
+    }
+    
+    .model-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .tooltip {
+        max-width: 250px;
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header">
+    <h1>🔧 Configuration Manuelle du Modèle RNN</h1>
+    <p class="description">Personnalisez finement les hyperparamètres de votre réseau de neurones récurrent pour optimiser les performances.</p>
+</div>
+
+<div class="glass-card">
+    <form method="post" action="{{ url_for('main.manual_processing') }}">
+        <!-- Model Type Selection -->
+        <div class="parameter-section">
+            <h3>🧠 Architecture du Modèle</h3>
+            <div class="model-type-section">
+                <label>Type de modèle :
+                    <span class="help-icon">?
+                        <span class="tooltip">Choisissez le type de réseau de neurones récurrent. LSTM est recommandé pour la plupart des cas car il gère bien les dépendances à long terme.</span>
+                    </span>
+                </label>
+                <div class="model-cards">
+                    <div class="model-card" data-value="bi_rnn">
+                        <input type="radio" name="model_type" value="bi_rnn" id="bi_rnn">
+                        <h4>Bi-RNN</h4>
+                        <p>Simple et rapide</p>
+                    </div>
+                    <div class="model-card selected" data-value="bi_lstm">
+                        <input type="radio" name="model_type" value="bi_lstm" id="bi_lstm" checked>
+                        <h4>Bi-LSTM</h4>
+                        <p>Mémoire longue terme</p>
+                    </div>
+                    <div class="model-card" data-value="bi_gru">
+                        <input type="radio" name="model_type" value="bi_gru" id="bi_gru">
+                        <h4>Bi-GRU</h4>
+                        <p>Équilibre optimal</p>
+                    </div>
+                    <div class="model-card" data-value="stacked_lstm">
+                        <input type="radio" name="model_type" value="stacked_lstm" id="stacked_lstm">
+                        <h4>Stacked LSTM</h4>
+                        <p>Plusieurs couches LSTM empilées pour une meilleure capacité d'apprentissage.</p>
+                    </div>
+                    <div class="model-card" data-value="stacked_gru">
+                        <input type="radio" name="model_type" value="stacked_gru" id="stacked_gru">
+                        <h4>Stacked GRU</h4>
+                        <p>Plusieurs couches GRU empilées, rapide et performant sur de longues séquences.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Parameters -->
+        <div class="parameter-section">
+            <h3>🏗️ Structure du Réseau</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="num_layers">🏢 Nombre de couches :
+                        <span class="help-icon">?
+                            <span class="tooltip">Nombre de couches RNN empilées. Plus de couches permettent d'apprendre des relations plus complexes mais augmentent le risque de surapprentissage. Commencez avec 1-2 couches.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="num_layers" id="num_layers" class="form-control" value="1" min="1" max="20">
+                    <div class="form-description">Plus de couches = plus de complexité</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="units">⚙️ Neurones par couche :
+                        <span class="help-icon">?
+                            <span class="tooltip">Nombre d'unités (neurones) dans chaque couche RNN. Plus d'unités = plus de capacité d'apprentissage mais plus de temps de calcul. Valeurs typiques : 32-256.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="units" id="units" class="form-control" value="32" min="1" max="512" step="1">
+                    <div class="form-description">Capacité d'apprentissage du modèle</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regularization Parameters -->
+        <div class="parameter-section">
+            <h3>🛡️ Régularisation</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="dropout">🎭 Dropout :
+                        <span class="help-icon">?
+                            <span class="tooltip">Fraction des neurones désactivés aléatoirement pendant l'entraînement pour éviter le surapprentissage. 0.2-0.5 est recommandé. Plus élevé = plus de régularisation.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="dropout" id="dropout" class="form-control" step="0.1" value="0.3" min="0" max="0.5">
+                    <div class="form-description">Prévient le surapprentissage</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurrent_dropout">🔄 Recurrent Dropout :
+                        <span class="help-icon">?
+                            <span class="tooltip">Dropout appliqué spécifiquement aux connexions récurrentes (entre les étapes temporelles). Aide à regulariser les RNN. Généralement plus faible que le dropout classique.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="recurrent_dropout" id="recurrent_dropout" class="form-control" step="0.1" value="0.2" min="0" max="0.5">
+                    <div class="form-description">Dropout sur les connexions récurrentes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Parameters -->
+        <div class="parameter-section">
+            <h3>🎯 Paramètres d'Entraînement</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="learning_rate">📈 Taux d'apprentissage :
+                        <span class="help-icon">?
+                            <span class="tooltip">Contrôle la taille des pas pendant l'optimisation. Trop élevé = instabilité, trop faible = apprentissage lent. 0.001 est un bon point de départ pour Adam.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="learning_rate" id="learning_rate" class="form-control" step="0.0001" value="0.001" min="0.0001" max="1">
+                    <div class="form-description">Vitesse d'apprentissage du modèle</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="batch_size">📦 Batch Size :
+                        <span class="help-icon">?
+                            <span class="tooltip">Nombre d'échantillons traités simultanément. Plus grand = plus stable mais plus de mémoire. Plus petit = plus de bruit mais parfois meilleure généralisation. 32-128 sont courants.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="batch_size" id="batch_size" class="form-control" value="32" min="1" max="256" step="1">
+                    <div class="form-description">Nombre d'échantillons par batch</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="epochs">🔁 Épochs :
+                        <span class="help-icon">?
+                            <span class="tooltip">Nombre de fois où le modèle voit l'ensemble de données complet. L'early stopping arrêtera automatiquement si aucune amélioration n'est détectée.</span>
+                        </span>
+                    </label>
+                    <input type="number" name="epochs" id="epochs" class="form-control" value="10" min="1" max="100">
+                    <div class="form-description">Nombre d'itérations d'entraînement</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="optimizer">⚡ Optimiseur :
+                        <span class="help-icon">?
+                            <span class="tooltip">Algorithme d'optimisation. Adam adapte automatiquement le taux d'apprentissage et est généralement le meilleur choix. RMSprop est aussi efficace pour les RNN.</span>
+                        </span>
+                    </label>
+                    <select name="optimizer" id="optimizer" class="form-control">
+                        <option value="adam" selected>Adam (recommandé)</option>
+                        <option value="rmsprop">RMSprop</option>
+                    </select>
+                    <div class="form-description">Algorithme d'optimisation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-section">
+            <a href="{{ url_for('main.processing_mode') }}" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Retour aux modes
+            </a>
+            <button type="submit" class="submit-btn">🚀 Lancer l'entraînement</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Model card selection
+const modelCards = document.querySelectorAll('.model-card');
+modelCards.forEach(card => {
+    card.addEventListener('click', () => {
+        modelCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input[type="radio"]').checked = true;
+    });
+});
+
+// Form interactions
+const inputs = document.querySelectorAll('.form-control');
+inputs.forEach(input => {
+    input.addEventListener('focus', () => {
+        input.parentElement.style.transform = 'scale(1.02)';
+        input.parentElement.style.transition = '0.2s ease';
+    });
+    
+    input.addEventListener('blur', () => {
+        input.parentElement.style.transform = 'scale(1)';
+    });
+});
+
+// Form submission
+const form = document.querySelector('form');
+form.addEventListener('submit', (e) => {
+    const submitBtn = document.querySelector('.submit-btn');
+    AutoMLUtils.showLoadingState(submitBtn, 'Entraînement en cours...');
+});
+
+// Real-time parameter validation
+const validateRange = (input, min, max) => {
+    input.addEventListener('input', () => {
+        const value = parseFloat(input.value);
+        if (value < min || value > max) {
+            input.style.borderColor = '#ff6b6b';
+            input.style.background = 'rgba(255, 107, 107, 0.1)';
+        } else {
+            input.style.borderColor = '#4facfe';
+            input.style.background = 'rgba(79, 172, 254, 0.1)';
+        }
+    });
+};
+
+// Apply validation to specific inputs
+validateRange(document.getElementById('dropout'), 0, 0.5);
+validateRange(document.getElementById('recurrent_dropout'), 0, 0.3);
+validateRange(document.getElementById('learning_rate'), 0.0001, 0.01);
+
+// Enhanced tooltip functionality
+document.querySelectorAll('.help-icon').forEach(function(element) {
+    element.addEventListener('mouseenter', function() {
+        const tooltip = this.querySelector('.tooltip');
+        if (tooltip) {
+            tooltip.style.opacity = '1';
+            tooltip.style.visibility = 'visible';
+            tooltip.style.transform = 'translateX(-50%) translateY(-5px)';
+        }
+    });
+    
+    element.addEventListener('mouseleave', function() {
+        const tooltip = this.querySelector('.tooltip');
+        if (tooltip) {
+            tooltip.style.opacity = '0';
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.transform = 'translateX(-50%) translateY(0)';
+        }
+    });
+});
+</script>
+{% endblock %}

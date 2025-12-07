@@ -1,0 +1,30 @@
+<div class="navigation">
+    <!-- Left navigation buttons -->
+    <div class="nav-buttons">
+        {% for button in navigation.left_buttons %}
+        <a href="{{ button.url }}" class="btn btn-{{ button.type or 'secondary' }}">
+            {{ button.text }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Progress indicator (if provided) -->
+    {% if navigation.progress %}
+    <div class="progress-indicator">
+        <span class="step-badge">Étape {{ navigation.progress.current }}/{{ navigation.progress.total }}</span>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: '{{ ((navigation.progress.current / navigation.progress.total * 100) | round(0, 'floor')) }}%';"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Right navigation buttons -->
+    <div class="nav-buttons">
+        {% for button in navigation.right_buttons %}
+        <a href="{{ button.url }}" class="btn btn-{{ button.type or 'secondary' }}"
+           {% if button.disabled %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+            {{ button.text }}
+        </a>
+        {% endfor %}
+    </div>
+</div>

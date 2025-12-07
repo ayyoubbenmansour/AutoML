@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}Mode de Traitement - AutoML Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page-specific styles for processing mode selection */
+.info-panel {
+    background: var(--accent-gradient);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 50px;
+    box-shadow: 0 15px 35px rgba(79, 172, 254, 0.3);
+    position: relative;
+    z-index: 3;
+    animation: slideIn 0.8s ease-out 0.2s both;
+}
+
+.info-panel h2 {
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 15px;
+}
+
+.dataset-name {
+    font-size: 1.3rem;
+    font-weight: var(--font-weight-semibold);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 25px;
+    border-radius: 25px;
+    display: inline-block;
+    margin: 10px 15px;
+    backdrop-filter: blur(10px);
+}
+
+.modes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin-bottom: 50px;
+}
+
+.mode-card {
+    background: var(--glass-bg);
+    border-radius: var(--border-radius-large);
+    padding: 40px;
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-heavy);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.mode-card:nth-child(1) { animation-delay: 0.3s; }
+.mode-card:nth-child(2) { animation-delay: 0.4s; }
+.mode-card:nth-child(3) { animation-delay: 0.5s; }
+
+.mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.mode-card:hover::before {
+    left: 100%;
+}
+
+.mode-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+    border-color: rgba(79, 172, 254, 0.5);
+}
+
+.mode-icon {
+    font-size: 4rem;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 0 20px rgba(79, 172, 254, 0.4));
+    animation: bounce 3s ease-in-out infinite;
+}
+
+.mode-card h3 {
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.mode-card p {
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    margin-bottom: 20px;
+}
+
+.mode-features {
+    list-style: none;
+    margin-bottom: 30px;
+}
+
+.mode-features li {
+    padding: 8px 0;
+    font-size: 0.95rem;
+    opacity: 0.85;
+    position: relative;
+    padding-left: 25px;
+}
+
+.mode-features li::before {
+    content: "✓";
+    color: #4CAF50;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 8px;
+}
+
+.mode-btn {
+    background: var(--danger-gradient);
+    color: white;
+    padding: 15px 35px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.mode-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.mode-btn:hover::before {
+    left: 100%;
+}
+
+.mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+}
+
+.mode-card.default .mode-btn {
+    background: var(--accent-gradient);
+}
+
+.mode-card.default .mode-btn:hover {
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+.mode-card.hpo .mode-btn {
+    background: var(--warning-gradient);
+}
+
+.mode-card.hpo .mode-btn:hover {
+    box-shadow: 0 8px 25px rgba(142, 68, 173, 0.4);
+}
+
+.difficulty-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    backdrop-filter: blur(10px);
+}
+
+.difficulty-badge.easy {
+    background: rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(76, 175, 80, 0.5);
+    color: #4CAF50;
+}
+
+.difficulty-badge.medium {
+    background: rgba(255, 193, 7, 0.3);
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    color: #FFC107;
+}
+
+.difficulty-badge.advanced {
+    background: rgba(156, 39, 176, 0.3);
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    color: #9C27B0;
+}
+
+.navigation-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 50px;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .modes-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .mode-card {
+        padding: 30px 25px;
+    }
+    
+    .mode-icon {
+        font-size: 3rem;
+    }
+    
+    .navigation-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .nav-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .progress-indicator {
+        justify-content: center;
+        order: -1;
+    }
+    
+    .progress-bar {
+        width: 200px;
+    }
+    
+    .info-panel {
+        padding: 30px 25px;
+    }
+    
+    .info-panel .dataset-name {
+        font-size: 1.2rem;
+        margin: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mode-card {
+        padding: 25px 20px;
+    }
+    
+    .info-panel {
+        padding: 25px 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb">
+    <ol>
+        <li><a href="{{ url_for('main.home') }}">🏠 Accueil</a></li>
+        <li><a href="{{ url_for('main.upload') }}">📤 Upload</a></li>
+        <li><a href="{{ url_for('main.visualize') }}">📊 Visualisation</a></li>
+        <li><a href="{{ url_for('main.preprocess_config') }}">⚙️ Prétraitement</a></li>
+        <li><strong>🤖 Mode de Traitement</strong></li>
+    </ol>
+</nav>
+
+<!-- Header -->
+<div class="header">
+    <h1>🤖 Sélection du Mode de Traitement</h1>
+    <p>Choisissez votre approche d'entraînement pour optimiser vos modèles RNN</p>
+</div>
+
+<!-- Dataset Info Panel -->
+<div class="info-panel">
+    <h2>📁 Dataset Prêt</h2>
+    <div>
+        <span class="dataset-name">📊 {{ filename }}</span>
+        <span class="dataset-name">🎯 {{ target_column }}</span>
+    </div>
+    <p>Votre dataset est prétraité et prêt pour l'entraînement IA</p>
+</div>
+
+<!-- Processing Modes -->
+<div class="modes-container">
+    <!-- Default Processing Mode -->
+    <div class="mode-card default" onclick="selectMode('default')">
+        <div class="difficulty-badge easy">Facile</div>
+        <div class="mode-icon">⚡</div>
+        <h3>Traitement Automatique</h3>
+        <p>Configuration optimisée automatiquement avec des paramètres prédéfinis pour des résultats rapides et efficaces.</p>
+        <ul class="mode-features">
+            <li>Paramètres optimisés par défaut</li>
+            <li>Entraînement rapide (5-10 min)</li>
+            <li>Modèles RNN, LSTM, GRU</li>
+            <li>Idéal pour les débutants</li>
+            <li>Résultats garantis</li>
+        </ul>
+        <button class="mode-btn" type="button">
+            🚀 Démarrer l'Auto-Training
+        </button>
+    </div>
+
+    <!-- Manual Processing Mode -->
+    <div class="mode-card manual" onclick="selectMode('manual')">
+        <div class="difficulty-badge medium">Intermédiaire</div>
+        <div class="mode-icon">🔧</div>
+        <h3>Configuration Manuelle</h3>
+        <p>Contrôlez tous les hyperparamètres pour personnaliser entièrement votre modèle selon vos besoins spécifiques.</p>
+        <ul class="mode-features">
+            <li>Contrôle total des paramètres</li>
+            <li>Hyperparamètres personnalisés</li>
+            <li>Architecture flexible</li>
+            <li>Optimiseurs avancés</li>
+            <li>Résultats sur-mesure</li>
+        </ul>
+        <button class="mode-btn" type="button">
+            🎛️ Configuration Avancée
+        </button>
+    </div>
+
+    <!-- HPO Processing Mode -->
+    <div class="mode-card hpo" onclick="selectMode('hpo')">
+        <div class="difficulty-badge advanced">Expert</div>
+        <div class="mode-icon">🧠</div>
+        <h3>Optimisation HPO</h3>
+        <p>Intelligence artificielle avancée pour trouver automatiquement les meilleurs hyperparamètres via Grid Search, Random Search ou Optimisation Bayésienne.</p>
+        <ul class="mode-features">
+            <li>IA pour optimisation auto</li>
+            <li>Grid/Random/Bayesian Search</li>
+            <li>Performance maximale</li>
+            <li>Temps d'entraînement long</li>
+            <li>Résultats de pointe</li>
+        </ul>
+        <button class="mode-btn" type="button">
+            🧪 Optimisation HPO
+        </button>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="navigation-section">
+    <div class="nav-buttons">
+        <a href="{{ url_for('main.preprocess_config') }}" class="btn btn-secondary">
+            ⬅️ Retour au Prétraitement
+        </a>
+    </div>
+
+    <div class="progress-indicator">
+        <span class="step-badge">Étape 4/5</span>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 80%;"></div>
+        </div>
+    </div>
+
+    <div style="width: 200px;"></div> <!-- Spacer for alignment -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mode selection function
+function selectMode(mode) {
+    // Add loading animation to clicked card
+    const clickedCard = event.currentTarget;
+    const button = clickedCard.querySelector('.mode-btn');
+    const originalText = button.textContent;
+    
+    AutoMLUtils.showLoadingState(button, 'Chargement...');
+    clickedCard.classList.add('loading');
+    
+    // Redirect based on mode
+    setTimeout(() => {
+        switch(mode) {
+            case 'default':
+                window.location.href = "{{ url_for('main.default_processing') }}";
+                break;
+            case 'manual':
+                window.location.href = "{{ url_for('main.manual_processing') }}";
+                break;
+            case 'hpo':
+                window.location.href = "{{ url_for('main.hpo_processing') }}";
+                break;
+        }
+    }, 500);
+}
+
+// Enhanced card hover effects
+document.querySelectorAll('.mode-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        if (!this.classList.contains('loading')) {
+            this.style.transform = 'translateY(-15px) scale(1.03)';
+        }
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        if (!this.classList.contains('loading')) {
+            this.style.transform = 'translateY(-10px) scale(1.03)';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+
+{% block title %}AutoML Pro - Import de Données{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page-specific styles for upload page */
+.upload-container {
+    background: var(--glass-bg);
+    border-radius: var(--border-radius-large);
+    padding: 60px 50px;
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+    box-shadow: var(--shadow-heavy);
+}
+
+.upload-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 4s ease-in-out infinite;
+}
+
+.file-upload-area {
+    border: 3px dashed rgba(255, 255, 255, 0.4);
+    border-radius: var(--border-radius);
+    padding: 80px 40px;
+    margin-bottom: 40px;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 3;
+}
+
+.file-upload-area:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-light);
+}
+
+.file-upload-area.dragover {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.15);
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(79, 172, 254, 0.2);
+}
+
+.upload-icon {
+    font-size: 5rem;
+    margin-bottom: 25px;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 20px rgba(79, 172, 254, 0.3));
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.upload-text {
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+    font-weight: var(--font-weight-semibold);
+}
+
+.upload-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-btn {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    text-transform: uppercase;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 1.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.upload-btn:hover::before {
+    left: 100%;
+}
+
+.upload-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+}
+
+.supported-formats {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.format-tag {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    transition: var(--transition-fast);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.format-tag:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-light);
+}
+
+.selected-file {
+    background: rgba(79, 172, 254, 0.2);
+    border: 2px solid #4facfe;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 25px 0;
+    text-align: left;
+    animation: slideIn 0.5s ease-out;
+    backdrop-filter: blur(10px);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.file-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 10px rgba(79, 172, 254, 0.5));
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: 5px;
+}
+
+.file-size {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.submit-section {
+    margin-top: 40px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.submit-btn {
+    background: var(--danger-gradient);
+    color: white;
+    padding: 18px 50px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    text-transform: uppercase;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 2px;
+    margin-right: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.submit-btn:hover::before {
+    left: 100%;
+}
+
+.submit-btn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(238, 90, 82, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 18px 40px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    display: inline-block;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 1px;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+.progress {
+    display: none;
+    margin-top: 30px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-gradient);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    width: 0%;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShine 2s ease-in-out infinite;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: 15px;
+    font-weight: var(--font-weight-semibold);
+    color: #4facfe;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 40px 25px;
+    }
+    
+    .file-upload-area {
+        padding: 50px 25px;
+    }
+    
+    .upload-icon {
+        font-size: 3.5rem;
+    }
+    
+    .upload-text {
+        font-size: 1.2rem;
+    }
+    
+    .upload-subtitle {
+        font-size: 1rem;
+    }
+    
+    .submit-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .submit-btn {
+        margin-right: 0;
+        width: 100%;
+    }
+    
+    .back-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .supported-formats {
+        gap: 15px;
+    }
+    
+    .format-tag {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .upload-container {
+        padding: 30px 20px;
+    }
+    
+    .supported-formats {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>📁 Importer Votre Dataset</h1>
+    <p>Sélectionnez votre fichier pour commencer l'analyse intelligente et le traitement automatisé</p>
+</div>
+
+<div class="upload-container">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="file-upload-area" id="fileUploadArea">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Déposez votre fichier ici ou cliquez pour parcourir</div>
+            <div class="upload-subtitle">Formats supportés : CSV, JSON, Excel <br>Traitement intelligent avec analyse automatique</div>
+            <input type="file" name="dataset" class="file-input" id="fileInput" accept=".csv,.json,.xlsx,.xls" required>
+            <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                🔍 Choisir un fichier
+            </button>
+        </div>
+        
+        <div class="supported-formats">
+            <div class="format-tag">📊 CSV</div>
+            <div class="format-tag">📋 JSON</div>
+            <div class="format-tag">📈 Excel (.xlsx)</div>
+            <div class="format-tag">📉 Excel (.xls)</div>
+        </div>
+        
+        <div id="selectedFile" class="selected-file" style="display: none;">
+            <div class="file-info">
+                <span class="file-icon">📄</span>
+                <div class="file-details">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+                <div style="color: #4CAF50; font-size: 1.5rem;">✓</div>
+            </div>
+        </div>
+        
+        <div class="progress" id="uploadProgress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">🚀 Traitement en cours...</div>
+        </div>
+        
+        <div class="submit-section">
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                ✨ Analyser le Dataset
+            </button>
+            <a href="{{ url_for('main.home') }}" class="back-btn">← Retour à l'accueil</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('fileInput');
+const fileUploadArea = document.getElementById('fileUploadArea');
+const selectedFile = document.getElementById('selectedFile');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const submitBtn = document.getElementById('submitBtn');
+const uploadForm = document.getElementById('uploadForm');
+const uploadProgress = document.getElementById('uploadProgress');
+const progressFill = document.getElementById('progressFill');
+
+// File selection handler
+fileInput.addEventListener('change', handleFileSelect);
+
+// Drag and drop handlers
+fileUploadArea.addEventListener('dragover', handleDragOver);
+fileUploadArea.addEventListener('dragleave', handleDragLeave);
+fileUploadArea.addEventListener('drop', handleDrop);
+
+// Prevent default drag behaviors
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    document.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        if (validateFile(file)) {
+            displayFileInfo(file);
+        }
+    }
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    fileUploadArea.classList.add('dragover');
+}
+
+function handleDragLeave(event) {
+    event.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        const file = files[0];
+        if (validateFile(file)) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            displayFileInfo(file);
+        }
+    }
+}
+
+function validateFile(file) {
+    const maxSize = 16 * 1024 * 1024; // 16MB
+    if (file.size > maxSize) {
+        AutoMLUtils.showNotification('Le fichier est trop volumineux. Taille maximum : 16MB', 'error');
+        return false;
+    }
+    
+    const allowedExtensions = ['csv', 'json', 'xlsx', 'xls'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+        AutoMLUtils.showNotification('Format de fichier non supporté. Utilisez : CSV, JSON, Excel (.xlsx, .xls)', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function displayFileInfo(file) {
+    fileName.textContent = file.name;
+    fileSize.textContent = AutoMLUtils.formatFileSize(file.size);
+    selectedFile.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+    submitBtn.style.transform = 'scale(1.02)';
+    setTimeout(() => submitBtn.style.transform = 'scale(1)', 200);
+}
+
+// Form submission with progress
+uploadForm.addEventListener('submit', function(event) {
+    if (!fileInput.files[0]) {
+        event.preventDefault();
+        AutoMLUtils.showNotification('Veuillez sélectionner un fichier.', 'error');
+        return;
+    }
+    
+    uploadProgress.style.display = 'block';
+    AutoMLUtils.showLoadingState(submitBtn, 'Analyse en cours...');
+    
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 12;
+        if (progress > 85) progress = 85;
+        progressFill.style.width = progress + '%';
+    }, 150);
+    
+    setTimeout(() => {
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+    }, 2000);
+});
+</script>
+{% endblock %}
