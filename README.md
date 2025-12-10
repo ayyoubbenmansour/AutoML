@@ -286,7 +286,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-**Author:** Ayoub Ben Mansour  
+**Author:** Ayoub BENMANSOUR  
 **Repository:** [https://github.com/ayyoubbenmansour/AutoML](https://github.com/ayyoubbenmansour/AutoML)  
 **Issues:** [Report a bug](https://github.com/ayyoubbenmansour/AutoML/issues)
 
